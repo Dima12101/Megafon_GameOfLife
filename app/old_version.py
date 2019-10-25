@@ -1,4 +1,5 @@
 from graphics import *
+from tkinter import *
 import threading
 import random
 
@@ -30,6 +31,8 @@ COLOR_DIE = 'white'
 
 class Game:
     def __init__(self):
+        self.root = Tk()
+        self.canvas = Canvas(self.root, width=200, height=200, bg='white')
         self.win = GraphWin("Game of Life", HEIGHT_WIN, WIDTH_WIN)
         self.title = self.Title(self.win, TITLE_BEGIN)
         self.cells, self.markers = self._initializeField()
