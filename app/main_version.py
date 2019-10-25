@@ -30,7 +30,7 @@ MESSAGE_CHOICE_CELL = 'Please, choice the cells'
 MESSAGE_RUN = 'Game is running!'
 
 # Settings button
-HEIGHT_BUTTON = 35
+HEIGHT_BUTTON = 40
 TEXT_BEGIN = 'Begin!'
 TEXT_START = 'Start!'
 TEXT_RESTART = 'Restart!'
@@ -39,9 +39,6 @@ TEXT_RESTART = 'Restart!'
 STATE_BEGIN = 1
 STATE_CHOICE_CELL = 2
 STATE_RUN = 3
-
-# Setting game
-DELAY = 1
 
 
 class Game:
@@ -62,14 +59,24 @@ class Game:
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self._click_on_field)
 
+        self.slider = Scale(self.window, from_=1, to=1000, orient=HORIZONTAL, length=WIDTH_CANV // 2)
+        self.slider.bind("<B1-Motion>", self._slider_get_value())
+        self.slider.pack(side=LEFT, fill=Y)
+
         self.button = Button(self.window, command=self._click_on_button, text=TEXT_BEGIN,
-                             font=("Courier Bold", 12),  background="#a74c1f", foreground="white")
-        self.button.pack(side=BOTTOM, fill=X)
+                             font=("Courier Bold", 12),  background="#a74c1f", foreground="white",
+                             width=WIDTH_CANV // 2)
+        self.button.pack(side=RIGHT, fill=Y)
 
         self.markers = self._initializeField()
         self.state = STATE_BEGIN
+        self.delay = 1
 
         self.window.mainloop()
+
+    def _slider_get_value(self):
+        val = self.slider.get()
+        self.delay = val
 
     def _click_on_button(self):
         if self.state == STATE_BEGIN:
@@ -80,7 +87,7 @@ class Game:
             self.message.config(text=MESSAGE_RUN)
             self.button.config(text=TEXT_RESTART)
             self.state = STATE_RUN
-            self.window.after(DELAY, self._run)
+            self.window.after(self.delay, self._run)
         elif self.state == STATE_RUN:
             self.message.config(text=MESSAGE_CHOICE_CELL)
             self.button.config(text=TEXT_START)
@@ -161,7 +168,7 @@ class Game:
                                                      fill=COLOR_DIE, outline='white')
 
                         self.markers[i][j] = 0
-            self.window.after(DELAY, self._run)
+            self.window.after(self.delay, self._run)
 
     def _close(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
