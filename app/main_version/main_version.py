@@ -87,8 +87,8 @@ class Game:
 
     def _click_on_field(self, event):
         if self.state == STATE_CHOICE_CELL:
-            number_cell_x = (X_START + event.x) // WIDTH_CELL
-            number_cell_y = (Y_START + event.y) // HEIGHT_CELL
+            number_cell_x = min((X_START + event.x) // WIDTH_CELL, COUNT_CELLS_X - 1)
+            number_cell_y = min((Y_START + event.y) // HEIGHT_CELL, COUNT_CELLS_Y - 1)
             x = X_START + WIDTH_CELL * number_cell_x
             y = Y_START + HEIGHT_CELL * number_cell_y
             self.markers[number_cell_y][number_cell_x] = 1
@@ -116,9 +116,7 @@ class Game:
             return
         new_markers = []
         count_lives = 0
-        is_equal = True
         for i in range(COUNT_CELLS_Y):
-            row_new_markers = []
             for j in range(COUNT_CELLS_X):
                 count_around = 0
                 for k in [i - 1, i, i + 1]:
@@ -133,32 +131,25 @@ class Game:
                 if self.markers[i][j] == 0:
                     if count_around == 3:
                         count_lives += 1
-                        is_equal = False
-                        row_new_markers.append(1)
-                    else:
-                        row_new_markers.append(0)
+                        new_markers.append((i, j, 1))
                 elif self.markers[i][j] == 1:
-                    if count_around - 1 in [2, 3]:
-                        count_lives += 1
-                        row_new_markers.append(1)
+                    if count_around - 1 not in [2, 3]:
+                        new_markers.append((i, j, 0))
                     else:
-                        is_equal = False
-                        row_new_markers.append(0)
-            new_markers.append(row_new_markers)
-        if is_equal or count_lives == 0:
+                        count_lives += 1
+        if len(new_markers) == 0 or count_lives == 0:
             self._click_on_button()
         else:
-            for i, y in enumerate(range(Y_START, Y_END, HEIGHT_CELL)):
-                for j, x in enumerate(range(X_START, X_END, WIDTH_CELL)):
-                    if new_markers[i][j] == 1:
-                        self.canvas.create_rectangle(x, y, x + WIDTH_CELL, y + HEIGHT_CELL,
-                                                     fill=COLOR_LIVE, outline='#634a27')
-                        self.markers[i][j] = 1
-                    else:
-                        self.canvas.create_rectangle(x, y, x + WIDTH_CELL, y + HEIGHT_CELL,
-                                                     fill=COLOR_DIE, outline='white')
-
-                        self.markers[i][j] = 0
+            for new_marker in new_markers:
+                x = X_START + WIDTH_CELL * new_marker[1]
+                y = Y_START + HEIGHT_CELL * new_marker[0]
+                self.markers[new_marker[0]][new_marker[1]] = new_marker[2]
+                if new_marker[2] == 0:
+                    self.canvas.create_rectangle(x, y, x + WIDTH_CELL, y + HEIGHT_CELL, fill=COLOR_DIE,
+                                                 outline='white')
+                else:
+                    self.canvas.create_rectangle(x, y, x + WIDTH_CELL, y + HEIGHT_CELL, fill=COLOR_LIVE,
+                                                 outline='#634a27')
             self.window.after(DELAY, self._run)
 
     def _close(self):
